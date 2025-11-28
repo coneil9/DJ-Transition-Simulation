@@ -1,180 +1,195 @@
-## 🎧 DJ Transition Simulator 
-
+# 🎧 DJ Transition Simulator  
 A C++ audio analysis tool that evaluates transition compatibility between two tracks.
 
-## Overview
+---
 
-DJ Transition Simulator is a C++ command-line application that analyzes two audio tracks and predicts how well they can be mixed together.
-It performs real audio-DSP analysis, BPM detection, energy profiling, and rough key estimation, and computes transition points where the tracks align best musically and energetically.
+##  Overview
+
+**DJ Transition Simulator** is a C++ command-line application that analyzes two audio tracks and predicts **how well they can be mixed together**.  
+It performs real audio-DSP analysis including **BPM detection**, **energy profiling**, **rough key estimation**, and computes **transition windows** where the tracks align best musically and energetically.
+
+---
 
 ## 🚀 Features
 
-Audio Analysis
+###  Audio Analysis
+- Load WAV audio files via `libsndfile`
+- Normalize sample amplitudes
+- Convert multi-channel audio to mono
+- Extract sample rate, duration, and metadata
 
-Load WAV audio files and normalize them
-Convert multi-channel audio to mono
-Extract sample rate, duration, and metadata
+---
 
-# BPM Detection
+###  BPM Detection
+Uses classic DSP techniques:
+- Onset envelope generation
+- Autocorrelation-based periodicity detection  
+Produces an approximate **BPM** for each track.
 
-Detect tempo via:
-Onset envelope generation
-Autocorrelation-based periodicity analysis
-Produces an approximate BPM for each track
+---
 
-# Key Estimation
+###  Key Estimation
+Approximate harmonic key detection via:
+- FFT per analysis window  
+- Pitch-class histogram construction  
+- Matching to major/minor key templates  
+Outputs results like **“A minor”** or **“8A (Camelot)”**.
 
-Compute FFTs over time windows
-Build a pitch-class histogram
-Match to major/minor key profiles
-Output approximate harmonic key (e.g., “A minor” or “8A” Camelot style)
+---
 
-# Energy Curve Extraction
+### Energy Curve Extraction
+- Computes RMS energy per fixed window (e.g., **0.50s**)
+- Produces a time-series energy curve  
+- Helps identify **drops**, **build-ups**, **breakdowns**, and **chorus sections**
 
-Compute RMS energy values over fixed windows (e.g., 0.5s)
-Create a time-series energy profile for each track
-Identify breakdowns, build-ups, drops, etc.
+---
 
-# Transition Compatibility Score
+###  Transition Compatibility Score
 A heuristic scoring algorithm evaluates:
-BPM similarity (or stretchability)
-Harmonic key compatibility
-Energy alignment between the two tracks
-“Musical smoothness” of transitioning from A to B
+- **BPM similarity** (or feasible tempo stretch)
+- **Harmonic key compatibility**
+- **Energy alignment** between the two tracks
+- General **musical smoothness** of transitioning from A → B
 
-# Outputs:
+#### Output Scores:
+- **Overall score:** 0–10  
+- **Energy alignment score**  
+- **Harmonic compatibility score**  
+- **BPM match score**
 
-Overall score (0–10)
-Energy alignment score
-Harmonic compatibility score
-BPM match score
+---
 
-# Best Transition Window Detection
-
+###  Best Transition Window Detection
 Suggests:
-Where to mix out of Track A
-Where to mix into Track B
-With timestamps formatted as mm:ss
+- **Where to mix out** of Track A  
+- **Where to mix in** to Track B  
+- Timestamps formatted as `mm:ss`
 
-# Example Output
+---
+
+## Example Output
 
 Track A: Doses-Mimosas.wav
-  Sample rate: 48000 Hz
-  Channels   : 2 (converted to mono)
-  Frames     : 16092824
-  Duration   : 335.27 s (05:35)
-  BPM        : 114.80
-  Energy     : windows=671 windowSec=0.50
-               min=0.000000 max=0.272487
-  Key        : C#/Db major
+Sample rate: 48000 Hz
+Channels : 2 (converted to mono)
+Frames : 16092824
+Duration : 335.27 s (05:35)
+BPM : 114.80
+Energy : windows=671 windowSec=0.50
+min=0.000000 max=0.272487
+Key : C#/Db major
 
 Track B: Way-To-Go.wav
-  Sample rate: 48000 Hz
-  Channels   : 2 (converted to mono)
-  Frames     : 9338736
-  Duration   : 194.56 s (03:15)
-  BPM        : 122.28
-  Energy     : windows=390 windowSec=0.50
-               min=0.000000 max=0.364844
-  Key        : F#/Gb major
+Sample rate: 48000 Hz
+Channels : 2 (converted to mono)
+Frames : 9338736
+Duration : 194.56 s (03:15)
+BPM : 122.28
+Energy : windows=390 windowSec=0.50
+min=0.000000 max=0.364844
+Key : F#/Gb major
 
 === Suggested transition ===
-  Mix out of Track A at 05:25 -> into Track B at 01:23
-  Compatibility score: 5.95 / 10
-    BPM component   : 4.00 / 10
-    Key component   : 8.50 / 10
-    Energy component: 6.00 / 10
+Mix out of Track A at 05:25 -> into Track B at 01:23
+Compatibility score: 5.95 / 10
+BPM component : 4.00 / 10
+Key component : 8.50 / 10
+Energy component: 6.00 / 10
+
 Analysis completed.
 
-🧱 Technical Architecture
-📦 Core Modules
+markdown
+Copy code
 
-AudioLoader
+---
 
-Reads WAV files using libsndfile
+## 🧱 Technical Architecture
 
-Normalizes audio and converts to mono
+### 📦 Core Modules
 
-BpmAnalyzer
+#### **AudioLoader**
+- Reads WAV files using `libsndfile`  
+- Normalizes audio  
+- Converts multi-channel → mono
 
-Builds onset strength envelope
+#### **BpmAnalyzer**
+- Builds onset strength envelope  
+- Autocorrelation-based BPM estimator  
 
-Autocorrelation-based BPM estimator
+#### **EnergyAnalyzer**
+- Computes RMS energy per window  
+- Produces full energy curve vector  
 
-EnergyAnalyzer
+#### **KeyAnalyzer** *(optional)*
+- FFT → spectral profile → pitch-class histogram  
+- Matches against major/minor key templates  
 
-Computes RMS energy per window
+#### **TransitionScorer**
+- Computes BPM, key, and energy alignment scores  
+- Generates final compatibility score  
+- Selects best transition timestamps  
 
-Produces track energy curve vector
+#### **OutputFormatter**
+- Clean, human-readable terminal output  
+- (Optional) JSON export  
 
-KeyAnalyzer (optional)
+---
 
-FFT → spectral profile → pitch-class histogram
+## 🛠 Installation & Setup
 
-Match against major/minor templates
+### 🔧 Prerequisites
+- **C++17** or later  
+- **CMake 3.10+**  
+- **libsndfile** (audio file loading)  
+- **fftw3** (FFT operations)  
 
-TransitionScorer
+---
 
-Heuristic compatibility scoring
+### 🏗 Build Instructions
 
-Evaluates BPM, key, and energy mapping
-
-Selects best transition time alignment
-
-OutputFormatter
-
-Human-readable output
-
-
-# Installation & Setup
-Prerequisites
-
-C++17+
-
-CMake 3.10+
-
-libsndfile (audio file loading)
-
-fftw3 (FFT operations)
-
-Build Instructions
+``` bash
+git clone https://github.com/your-username/DJ-Transition-Simulator
 cd DJ-Transition-Simulator
 mkdir build && cd build
 cmake -S . -B build
 cmake --build build
+▶️ Run the Program
 
-Run
-./djtransition trackA.wav trackB.wav
+``` 
 
-
-## How the Scoring Works
+# 
+How the Scoring Works
 BPM Compatibility
+Perfect/near-perfect match → high score
 
-Perfect or near-perfect match → high score
-
-Small difference but stretchable → moderate
+Small stretchable difference → moderate
 
 Large difference → penalty
 
 Key Compatibility
-
-Uses harmonic mixing rules:
+Harmonic mixing rules:
 
 Same key → excellent
 
-Relative minor/major, perfect fifth → very good
+Relative minor/major, fifths → smooth
 
-Distant keys → penalty
+Distant keys → poor
 
 Energy Alignment
+Ideal: low → building → drop
 
-Compares the two RMS energy curves:
+Avoid: drop into breakdown
 
-Smooth transitions from low → high energy score well
+Alignment uses RMS curve similarity
 
-Clashing energy (drop into breakdown) scores poorly
+Final Score Formula
+text
+Copy code
+finalScore = w1 * bpmScore 
+           + w2 * keyScore 
+           + w3 * energyScore
+Where:
 
-Final Score
-finalScore = w1*bpmScore + w2*keyScore + w3*energyScore
+w1 + w2 + w3 = 1
 
-Where weights sum to 1 and can be tuned.
+Weights can be tuned as needed
