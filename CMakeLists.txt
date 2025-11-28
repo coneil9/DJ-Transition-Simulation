@@ -5,13 +5,14 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# External dependencies (to be filled in future phases).
-# You can adapt these find_package calls to match your environment.
-# find_package(libsndfile REQUIRED)
+# External dependencies (adjust to your environment).
+# libsndfile is required for audio loading.
+find_package(SndFile REQUIRED)
 # find_package(FFTW3 REQUIRED)
 
 add_executable(djtransition
     src/main.cpp
+    src/AudioLoader.cpp
 )
 
 target_include_directories(djtransition
@@ -20,4 +21,5 @@ target_include_directories(djtransition
 )
 
 # Link against external libraries when added.
-# target_link_libraries(djtransition PRIVATE sndfile FFTW3::fftw3)
+target_link_libraries(djtransition PRIVATE SndFile::sndfile)
+# target_link_libraries(djtransition PRIVATE FFTW3::fftw3)
