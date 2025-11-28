@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <array>
 #include <filesystem>
 #include <iomanip>
 #include <iostream>
@@ -99,11 +100,17 @@ int main(int argc, char** argv) {
 
     if (!analyses[0].energyCurve.empty() && !analyses[1].energyCurve.empty()) {
         TransitionSuggestion suggestion = findBestTransition(analyses[0], analyses[1]);
-        std::cout << "\nSuggested transition:\n";
+        std::cout << "\n=== Suggested transition ===\n";
         std::cout << "  Mix out of Track A at " << formatTime(suggestion.timeA)
                   << " -> into Track B at " << formatTime(suggestion.timeB) << "\n";
         std::cout << "  Compatibility score: " << std::fixed << std::setprecision(2)
                   << suggestion.score << " / 10\n";
+        std::cout << "    BPM component   : " << std::fixed << std::setprecision(2)
+                  << suggestion.bpmComponent * 10.0 << " / 10\n";
+        std::cout << "    Key component   : " << std::fixed << std::setprecision(2)
+                  << suggestion.keyComponent * 10.0 << " / 10\n";
+        std::cout << "    Energy component: " << std::fixed << std::setprecision(2)
+                  << suggestion.energyComponent * 10.0 << " / 10\n";
     }
 
     std::cout << "Analysis completed.\n";

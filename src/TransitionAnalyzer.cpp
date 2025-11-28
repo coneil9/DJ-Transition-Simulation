@@ -115,5 +115,8 @@ TransitionSuggestion findBestTransition(const TrackAnalysis& a, const TrackAnaly
     best.score = clamp01(total01) * 10.0;
     best.timeA = static_cast<double>(bestIdxA) * a.windowSeconds;
     best.timeB = static_cast<double>(bestIdxB) * b.windowSeconds;
+    best.bpmComponent = bpmScore;
+    best.keyComponent = keyScore;
+    best.energyComponent = bestEnergyScore;
     return best;
 }

@@ -14,4 +14,7 @@ struct TransitionSuggestion {
     double score = 0.0; // 0-10
     double timeA = 0.0; // seconds in Track A
     double timeB = 0.0; // seconds in Track B
+    double bpmComponent = 0.0;    // 0-1
+    double keyComponent = 0.0;    // 0-1
+    double energyComponent = 0.0; // 0-1
 };
