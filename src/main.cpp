@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "AudioLoader.hpp"
+#include "BpmAnalyzer.hpp"
 
 namespace fs = std::filesystem;
 
@@ -58,6 +59,13 @@ int main(int argc, char** argv) {
             std::cout << "  Frames     : " << audio.samples.size() << "\n";
             std::cout << "  Duration   : " << std::fixed << std::setprecision(2)
                       << durationSec << " s (" << formatTime(durationSec) << ")\n";
+
+            double bpm = estimateBPM(audio);
+            if (bpm <= 0.0) {
+                std::cout << "  BPM        : (could not estimate)\n";
+            } else {
+                std::cout << "  BPM        : " << std::fixed << std::setprecision(2) << bpm << "\n";
+            }
         }
     } catch (const std::exception& ex) {
         std::cerr << "Error: " << ex.what() << "\n";

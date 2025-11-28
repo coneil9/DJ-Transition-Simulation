@@ -13,6 +13,7 @@ find_package(SndFile REQUIRED)
 add_executable(djtransition
     src/main.cpp
     src/AudioLoader.cpp
+    src/BpmAnalyzer.cpp
 )
 
 target_include_directories(djtransition
