@@ -12,6 +12,7 @@
 #include "BpmAnalyzer.hpp"
 #include "EnergyAnalyzer.hpp"
 #include "KeyAnalyzer.hpp"
+#include "TransitionAnalyzer.hpp"
 
 namespace fs = std::filesystem;
 
@@ -42,6 +43,7 @@ int main(int argc, char** argv) {
     }
 
     std::vector<std::string> tracks{argv[1], argv[2]};
+    std::array<TrackAnalysis, 2> analyses{};
 
     try {
         for (size_t i = 0; i < tracks.size(); ++i) {
@@ -88,12 +90,22 @@ int main(int argc, char** argv) {
             }
 
             std::cout << "  Key        : " << analysis.key << "\n";
+            analyses[i] = analysis;
         }
     } catch (const std::exception& ex) {
         std::cerr << "Error: " << ex.what() << "\n";
         return 1;
     }
 
-    std::cout << "Audio loading completed. Next phases will add analysis modules.\n";
+    if (!analyses[0].energyCurve.empty() && !analyses[1].energyCurve.empty()) {
+        TransitionSuggestion suggestion = findBestTransition(analyses[0], analyses[1]);
+        std::cout << "\nSuggested transition:\n";
+        std::cout << "  Mix out of Track A at " << formatTime(suggestion.timeA)
+                  << " -> into Track B at " << formatTime(suggestion.timeB) << "\n";
+        std::cout << "  Compatibility score: " << std::fixed << std::setprecision(2)
+                  << suggestion.score << " / 10\n";
+    }
+
+    std::cout << "Analysis completed.\n";
     return 0;
 }

@@ -16,6 +16,7 @@ add_executable(djtransition
     src/BpmAnalyzer.cpp
     src/EnergyAnalyzer.cpp
     src/KeyAnalyzer.cpp
+    src/TransitionAnalyzer.cpp
 )
 
 target_include_directories(djtransition
