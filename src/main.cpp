@@ -1,12 +1,17 @@
+#include <algorithm>
 #include <filesystem>
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <vector>
 
+#include "AnalysisTypes.hpp"
 #include "AudioLoader.hpp"
 #include "BpmAnalyzer.hpp"
+#include "EnergyAnalyzer.hpp"
+#include "KeyAnalyzer.hpp"
 
 namespace fs = std::filesystem;
 
@@ -60,12 +65,29 @@ int main(int argc, char** argv) {
             std::cout << "  Duration   : " << std::fixed << std::setprecision(2)
                       << durationSec << " s (" << formatTime(durationSec) << ")\n";
 
-            double bpm = estimateBPM(audio);
-            if (bpm <= 0.0) {
+            TrackAnalysis analysis;
+            analysis.bpm = estimateBPM(audio);
+            analysis.windowSeconds = 0.5; // default energy window size in seconds
+            analysis.energyCurve = computeEnergyCurve(audio, analysis.windowSeconds);
+            analysis.key = estimateKey(audio);
+
+            if (analysis.bpm <= 0.0) {
                 std::cout << "  BPM        : (could not estimate)\n";
             } else {
-                std::cout << "  BPM        : " << std::fixed << std::setprecision(2) << bpm << "\n";
+                std::cout << "  BPM        : " << std::fixed << std::setprecision(2) << analysis.bpm << "\n";
             }
+
+            if (analysis.energyCurve.empty()) {
+                std::cout << "  Energy     : (could not compute)\n";
+            } else {
+                auto [minIt, maxIt] = std::minmax_element(analysis.energyCurve.begin(), analysis.energyCurve.end());
+                std::cout << "  Energy     : windows=" << analysis.energyCurve.size()
+                          << " windowSec=" << analysis.windowSeconds << "\n";
+                std::cout << "               min=" << std::fixed << std::setprecision(6) << *minIt
+                          << " max=" << std::fixed << std::setprecision(6) << *maxIt << "\n";
+            }
+
+            std::cout << "  Key        : " << analysis.key << "\n";
         }
     } catch (const std::exception& ex) {
         std::cerr << "Error: " << ex.what() << "\n";
