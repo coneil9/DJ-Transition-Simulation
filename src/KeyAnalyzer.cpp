@@ -65,14 +65,29 @@ double correlate(const std::array<double, 12>& a, const std::array<double, 12>& 
 std::string estimateKey(const AudioData& audio) {
     if (audio.sampleRate <= 0 || audio.samples.empty()) return "Unknown";
 
-    const int frameSize = 4096;
-    const int hopSize = 2048;
+    const int frameSize = 2048; // smaller for speed
+    const int hopSize = 1024;
     if (audio.samples.size() < static_cast<size_t>(frameSize)) return "Unknown";
+
+    // Limit number of analyzed frames to keep runtime reasonable on long files.
+    const size_t maxFrames = 120;
+    const size_t totalSamples = audio.samples.size();
+    const size_t totalHops = (totalSamples > static_cast<size_t>(frameSize))
+                                 ? (totalSamples - static_cast<size_t>(frameSize)) / hopSize
+                                 : 0;
+    size_t hopStride = 1;
+    if (totalHops > maxFrames && maxFrames > 0) {
+        hopStride = totalHops / maxFrames;
+        if (hopStride == 0) hopStride = 1;
+    }
 
     auto window = makeHann(frameSize);
     std::array<double, 12> histogram{};
-    const size_t totalSamples = audio.samples.size();
-    for (size_t start = 0; start + frameSize <= totalSamples; start += hopSize) {
+    size_t framesProcessed = 0;
+    for (size_t hopIdx = 0; hopIdx <= totalHops; hopIdx += hopStride) {
+        size_t start = hopIdx * hopSize;
+        if (start + static_cast<size_t>(frameSize) > totalSamples) break;
+
         std::vector<float> frame(frameSize);
         for (int n = 0; n < frameSize; ++n) {
             frame[n] = static_cast<float>(audio.samples[start + static_cast<size_t>(n)] * window[n]);
@@ -88,6 +103,9 @@ std::string estimateKey(const AudioData& audio) {
             if (pc < 0) pc += 12;
             histogram[static_cast<size_t>(pc)] += mag[k];
         }
+
+        ++framesProcessed;
+        if (framesProcessed >= maxFrames) break;
     }
 
     double histSum = 0.0;
